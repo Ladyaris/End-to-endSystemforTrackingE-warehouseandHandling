@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ESTEH SHIPPING</title>
+
+<style>
+
+:root{
+  --cream:#FBF3E7;
+  --tea:#B5651D;
+  --tea-dark:#7A4419;
+  --foam:#FFF9F0;
+  --line:#E4D2BB;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Georgia, serif;
+  background:var(--cream);
+}
+
+header{
+  background:var(--tea-dark);
+  color:white;
+  padding:25px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.tagline{
+  margin-top:5px;
+  color:#e8caa9;
+}
+
+main{
+  max-width:1100px;
+  margin:auto;
+  padding:30px;
+  display:grid;
+  grid-template-columns:350px 1fr;
+  gap:25px;
+}
+
+section{
+  background:white;
+  border-radius:15px;
+  padding:20px;
+  border:1px solid var(--line);
+}
+
+h2{
+  margin-bottom:15px;
+  color:var(--tea-dark);
+}
+
+label{
+  display:block;
+  margin-top:10px;
+  font-size:14px;
+}
+
+input{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ddd;
+  margin-top:5px;
+}
+
+.btn{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  color:white;
+  background:var(--tea);
+  margin-top:15px;
+}
+
+.btn:hover{
+  background:var(--tea-dark);
+}
+
+.card{
+  border:1px solid #ddd;
+  border-radius:10px;
+  padding:15px;
+  margin-bottom:15px;
+}
+
+.small{
+  font-size:14px;
+  color:#666;
+  margin-top:4px;
+}
+
+.status{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:20px;
+  color:white;
+  margin-top:10px;
+}
+
+.PENDING{
+  background:#f39c12;
+}
+
+.SHIPPED{
+  background:#3498db;
+}
+
+.DELIVERED{
+  background:#27ae60;
+}
+
+.CANCELLED{
+  background:#e74c3c;
+}
+
+select{
+  width:100%;
+  margin-top:10px;
+  padding:8px;
+  border-radius:6px;
+}
+
+.delete-btn{
+  background:#c0392b;
+}
+
+.empty{
+  text-align:center;
+  color:#888;
+  padding:20px;
+}
+
+.modal{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  justify-content:center;
+  align-items:center;
+  background:rgba(0,0,0,.5);
+}
+
+.modal-content{
+  background:white;
+  padding:25px;
+  width:400px;
+  border-radius:15px;
+  text-align:center;
+}
+
+.success-icon{
+  font-size:60px;
+  margin-bottom:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+<div class="brand">
+<span style="font-size:2rem">🚚</span>
+<h1>ESTEH SHIPPING</h1>
+</div>
+
+<div class="tagline">
+Tracking Service for Microservices System
+</div>
+
+</header>
+
+<main>
+
+<section>
+
+<h2>Buat Shipment</h2>
+
+<label>Order ID</label>
+<input id="order_id">
+
+<label>Customer Name</label>
+<input id="customer_name">
+
+<label>Address</label>
+<input id="address">
+
+<button class="btn" onclick="createShipment()">
+Buat Shipment
+</button>
+
+</section>
+
+<section>
+
+<h2>Tracking Pengiriman</h2>
+
+<button class="btn" onclick="loadShipments()">
+Reload Data
+</button>
+
+<div id="list" style="margin-top:15px">
+<div class="empty">Memuat shipment...</div>
+</div>
+
+</section>
+
+</main>
+
+<div id="successModal" class="modal">
+
+<div class="modal-content">
+
+<div class="success-icon">✅</div>
+
+<h3>Shipment Berhasil Dibuat</h3>
+
+<p id="shipmentInfo"></p>
+
+<button class="btn" onclick="closeModal()">
+OK
+</button>
+
+</div>
+
+</div>
+
+<script>
+
+const API = "http://localhost:3003";
+
+function showModal(message){
+  document.getElementById("shipmentInfo").innerHTML = message;
+  document.getElementById("successModal").style.display = "flex";
+}
+
+function closeModal(){
+  document.getElementById("successModal").style.display = "none";
+}
+
+async function loadShipments(){
+
+  const el = document.getElementById("list");
+
+  el.innerHTML =
+  "<div class='empty'>Memuat...</div>";
+
+  try{
+
+    const res =
+    await fetch(`${API}/shipments`);
+
+    const shipments =
+    await res.json();
+
+    if(!shipments.length){
+
+      el.innerHTML =
+      "<div class='empty'>Belum ada shipment</div>";
+
+      return;
+    }
+
+    el.innerHTML =
+    shipments.map(s=>`
+
+    <div class="card">
+
+      <b>Shipment #${s.shipment_id}</b>
+
+      <div class="small">
+        Order ID : ${s.order_id}
+      </div>
+
+      <div class="small">
+        Customer : ${s.customer_name}
+      </div>
+
+      <div class="small">
+        Address : ${s.address}
+      </div>
+
+      <div class="small">
+        Tracking : ${s.tracking_number}
+      </div>
+
+      <div class="small">
+        Created :
+        ${new Date(s.created_at).toLocaleString()}
+      </div>
+
+      <div>
+        <span class="status ${s.status}">
+          ${s.status}
+        </span>
+      </div>
+
+      <select
+        onchange="updateStatus(${s.shipment_id},this.value)"
+      >
+
+        <option value="PENDING"
+        ${s.status==="PENDING"?"selected":""}>
+        PENDING
+        </option>
+
+        <option value="SHIPPED"
+        ${s.status==="SHIPPED"?"selected":""}>
+        SHIPPED
+        </option>
+
+        <option value="DELIVERED"
+        ${s.status==="DELIVERED"?"selected":""}>
+        DELIVERED
+        </option>
+
+        <option value="CANCELLED"
+        ${s.status==="CANCELLED"?"selected":""}>
+        CANCELLED
+        </option>
+
+      </select>
+
+      <button
+        class="btn delete-btn"
+        onclick="deleteShipment(${s.shipment_id})">
+        Hapus Shipment
+      </button>
+
+    </div>
+
+    `).join("");
+
+  }catch(err){
+
+    console.log(err);
+
+    el.innerHTML =
+    "<div class='empty'>Gagal connect ke server</div>";
+  }
+}
+
+async function createShipment(){
+
+  const order_id =
+  document.getElementById("order_id").value;
+
+  const customer_name =
+  document.getElementById("customer_name").value;
+
+  const address =
+  document.getElementById("address").value;
+
+  if(!order_id || !customer_name || !address){
+
+    alert("Lengkapi semua data");
+    return;
+  }
+
+  const res =
+  await fetch(`${API}/shipments`,{
+
+    method:"POST",
+
+    headers:{
+      "Content-Type":"application/json"
+    },
+
+    body:JSON.stringify({
+      order_id:Number(order_id),
+      customer_name,
+      address
+    })
+
+  });
+
+  if(!res.ok){
+
+    alert("Gagal membuat shipment");
+    return;
+  }
+
+  showModal(`
+  <b>Order ID :</b> ${order_id}<br><br>
+  <b>Customer :</b> ${customer_name}<br><br>
+  <b>Address :</b> ${address}
+  `);
+
+  document.getElementById("order_id").value="";
+  document.getElementById("customer_name").value="";
+  document.getElementById("address").value="";
+
+  loadShipments();
+}
+
+async function updateStatus(id,status){
+
+  await fetch(
+    `${API}/shipments/${id}/status`,
+    {
+      method:"PUT",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify({
+        status,
+        location:"Updated From UI"
+      })
+    }
+  );
+
+  loadShipments();
+}
+
+async function deleteShipment(id){
+
+  if(!confirm("Hapus shipment ini?"))
+    return;
+
+  await fetch(
+    `${API}/shipments/${id}`,
+    {
+      method:"DELETE"
+    }
+  );
+
+  loadShipments();
+}
+
+loadShipments();
+
+</script>
+
+</body>
+</html>
