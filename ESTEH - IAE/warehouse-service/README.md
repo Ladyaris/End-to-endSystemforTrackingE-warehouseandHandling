@@ -1,6 +1,6 @@
 # Warehouse Service (Port 3002)
 
-**PIC: [Nama 2]**
+**PIC: Dinar Fadlilatunnisa**
 
 ## Tugas
 - Endpoint CRUD untuk produk & stok
