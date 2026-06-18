@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ESTEH — Logistics System</title>
+<style>
+  :root {
+    --cream: #FBF3E7;
+    --tea: #B5651D;
+    --tea-dark: #7A4419;
+    --foam: #FFF9F0;
+    --ink: #3A2A1E;
+    --line: #E4D2BB;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Georgia', 'Times New Roman', serif; background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+  /* Header */
+  header { background: var(--tea-dark); color: var(--foam); padding: 20px 32px; position: relative; overflow: hidden; }
+  header::after { content: ""; position: absolute; right: -40px; top: -40px; width: 160px; height: 160px; border-radius: 50%; background: var(--tea); opacity: 0.35; }
+  .brand { display: flex; align-items: baseline; gap: 14px; position: relative; z-index: 1; }
+  .brand h1 { font-size: 2rem; letter-spacing: 0.08em; font-weight: 700; }
+  .tagline { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.82rem; color: #E7C9A9; margin-top: 6px; position: relative; z-index: 1; }
+
+  /* Navbar */
+  nav { background: var(--foam); border-bottom: 2px solid var(--line); display: flex; gap: 0; padding: 0 32px; }
+  .nav-tab { padding: 14px 24px; cursor: pointer; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.88rem; font-weight: 600; color: #8A7560; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all .2s; }
+  .nav-tab.active { color: var(--tea-dark); border-bottom-color: var(--tea); }
+  .nav-tab:hover { color: var(--tea); }
+
+  /* Pages */
+  .page { display: none; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; }
+  .page.active { display: block; }
+
+  /* Grid */
+  .two-col { display: grid; grid-template-columns: 340px 1fr; gap: 28px; }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+
+  /* Cards */
+  section { background: var(--foam); border: 1px solid var(--line); border-radius: 14px; padding: 24px; }
+  h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; color: var(--tea-dark); }
+  .eyebrow { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--tea); margin-bottom: 6px; }
+  .desc { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.82rem; color: #8A7560; margin-bottom: 18px; line-height: 1.5; }
+
+  /* Form */
+  label { display: block; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.78rem; font-weight: 600; color: var(--ink); margin: 14px 0 5px; }
+  input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--cream); font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.9rem; color: var(--ink); }
+  input:focus, select:focus { outline: 2px solid var(--tea); outline-offset: 1px; }
+  .btn { margin-top: 20px; width: 100%; padding: 12px; border: none; border-radius: 8px; background: var(--tea); color: var(--foam); font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.92rem; font-weight: 700; cursor: pointer; transition: background .15s; }
+  .btn:hover { background: var(--tea-dark); }
+  .btn:disabled { opacity: 0.6; cursor: default; }
+  .msg { margin-top: 12px; padding: 10px 12px; border-radius: 8px; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.82rem; display: none; }
+  .msg.show { display: block; }
+  .msg.success { background: #EAF1E3; color: #4B6433; border: 1px solid #C9DBB6; }
+  .msg.error { background: #FBEAE6; color: #9C3B23; border: 1px solid #F0C2B5; }
+
+  /* List headers */
+  .list-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 16px; }
+  .refresh-btn { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.78rem; color: var(--tea-dark); background: var(--cream); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+  .refresh-btn:hover { background: var(--line); }
+
+  /* Order cards */
+  .order-card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+  .order-id { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.68rem; letter-spacing: 0.12em; color: #B89A7C; text-transform: uppercase; }
+  .order-product { font-size: 1rem; font-weight: 700; margin: 2px 0 3px; }
+  .order-meta { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.8rem; color: #8A7560; }
+  .order-side { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .status-pill { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.7rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 4px 12px; border-radius: 999px; }
+  .status-pending   { background: #FBE9D1; color: #9C6B1F; }
+  .status-confirmed { background: #E0EAF6; color: #2F5C8A; }
+  .status-shipped   { background: #F2E6F7; color: #6F3A8C; }
+  .status-delivered { background: #E4F0DA; color: #4B6433; }
+  .status-cancelled { background: #FBE3DF; color: #9C3B23; }
+  .icon-btn { background: none; border: none; cursor: pointer; font-size: 1rem; color: #C77B4C; padding: 2px 4px; }
+  .icon-btn:hover { color: #9C3B23; }
+  select.small { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.76rem; padding: 5px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--cream); width: auto; }
+
+  /* Warehouse cards */
+  .warehouse-card { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+  .wh-name { font-size: 1rem; font-weight: 700; margin-bottom: 3px; }
+  .wh-meta { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.8rem; color: #8A7560; }
+  .stock-badge { font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.85rem; font-weight: 700; padding: 6px 14px; border-radius: 999px; }
+  .stock-ok  { background: #E4F0DA; color: #4B6433; }
+  .stock-low { background: #FBE9D1; color: #9C6B1F; }
+  .stock-out { background: #FBE3DF; color: #9C3B23; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 40px 20px; color: #B89A7C; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.88rem; }
+  .empty-state .leaf { font-size: 2rem; display: block; margin-bottom: 8px; }
+
+  footer { text-align: center; font-family: 'Helvetica Neue', Arial, sans-serif; font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: #C9AE8E; padding-bottom: 24px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <span style="font-size:1.8rem">🧋</span>
+    <h1>ESTEH</h1>
+  </div>
+  <div class="tagline">End-to-end System for Tracking, E-warehouse &amp; Handling</div>
+</header>
+
+<nav>
+  <div class="nav-tab active" onclick="showPage('orders')">📋 Orders</div>
+  <div class="nav-tab" onclick="showPage('warehouse')">🏪 Warehouse</div>
+</nav>
+
+<!-- ── PAGE: ORDERS ── -->
+<div id="page-orders" class="page active">
+  <div class="two-col">
+    <section>
+      <div class="eyebrow">Buat Pesanan</div>
+      <h2>Pesanan Baru</h2>
+      <p class="desc">Stok akan dicek & dikurangi otomatis ke Warehouse Service.</p>
+
+      <label for="product_name">Nama Produk</label>
+      <input type="text" id="product_name" placeholder="Indomie Goreng" />
+
+      <label for="quantity">Jumlah</label>
+      <input type="number" id="quantity" placeholder="5" min="1" />
+
+      <label for="customer_name">Nama Pelanggan</label>
+      <input type="text" id="customer_name" placeholder="Ledi" />
+
+      <button class="btn" id="submitBtn" onclick="createOrder()">Buat Pesanan</button>
+      <div class="msg" id="formMsg"></div>
+    </section>
+
+    <section>
+      <div class="list-header">
+        <div>
+          <div class="eyebrow">Daftar Pesanan</div>
+          <h2>Pesanan Masuk</h2>
+        </div>
+        <button class="refresh-btn" onclick="loadOrders()">Refresh</button>
+      </div>
+      <div id="ordersList">
+        <div class="empty-state"><span class="leaf">🍃</span>Memuat pesanan...</div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<!-- ── PAGE: WAREHOUSE ── -->
+<div id="page-warehouse" class="page">
+  <div class="list-header">
+    <div>
+      <div class="eyebrow">Stok Barang</div>
+      <h2>Warehouse Service</h2>
+    </div>
+    <button class="refresh-btn" onclick="loadWarehouse()">Refresh</button>
+  </div>
+  <div id="warehouseList">
+    <div class="empty-state"><span class="leaf">🍃</span>Memuat data warehouse...</div>
+  </div>
+</div>
+
+<footer>ESTEH · Logistics System · Order :3001 · Warehouse :3002</footer>
+
+<script>
+const ORDER_API     = 'http://localhost:3001';
+const WAREHOUSE_API = 'http://localhost:3002';
+
+const STATUS_LABELS = {
+  pending: 'Pending', confirmed: 'Confirmed',
+  shipped: 'Shipped', delivered: 'Delivered', cancelled: 'Cancelled'
+};
+
+// ── Navigation ────────────────────────────────────────────────────────────────
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const idx = ['orders', 'warehouse'].indexOf(name);
+  document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+  if (name === 'orders')    loadOrders();
+  if (name === 'warehouse') loadWarehouse();
+}
+
+// ── Orders ────────────────────────────────────────────────────────────────────
+async function loadOrders() {
+  const el = document.getElementById('ordersList');
+  el.innerHTML = '<div class="empty-state"><span class="leaf">🍃</span>Memuat pesanan...</div>';
+  try {
+    const res  = await fetch(`${ORDER_API}/orders`);
+    const json = await res.json();
+    if (!json.data?.length) {
+      el.innerHTML = '<div class="empty-state"><span class="leaf">🍃</span>Belum ada pesanan.</div>';
+      return;
+    }
+    el.innerHTML = json.data.map(o => `
+      <div class="order-card">
+        <div>
+          <div class="order-id">#${String(o.id).padStart(4,'0')}</div>
+          <div class="order-product">${escapeHtml(o.product_name)}</div>
+          <div class="order-meta">${o.quantity}x · ${escapeHtml(o.customer_name)}</div>
+        </div>
+        <div class="order-side">
+          <span class="status-pill status-${o.status}">${STATUS_LABELS[o.status] || o.status}</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select class="small" onchange="updateStatus(${o.id}, this.value)">
+              ${Object.entries(STATUS_LABELS).map(([v,l]) =>
+                `<option value="${v}" ${v===o.status?'selected':''}>${l}</option>`
+              ).join('')}
+            </select>
+            <button class="icon-btn" onclick="deleteOrder(${o.id})">✕</button>
+          </div>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state"><span class="leaf">🍃</span>Tidak bisa memuat pesanan. Pastikan Order Service berjalan di port 3001.</div>';
+  }
+}
+
+async function createOrder() {
+  const product_name  = document.getElementById('product_name').value.trim();
+  const quantity      = document.getElementById('quantity').value;
+  const customer_name = document.getElementById('customer_name').value.trim();
+  const msg = document.getElementById('formMsg');
+  const btn = document.getElementById('submitBtn');
+
+  if (!product_name || !quantity || !customer_name)
+    return showMsg(msg, 'error', 'Lengkapi semua kolom terlebih dahulu.');
+
+  btn.disabled = true; btn.textContent = 'Menyimpan...';
+  try {
+    const res  = await fetch(`${ORDER_API}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_name, quantity: Number(quantity), customer_name })
+    });
+    const json = await res.json();
+    if (res.ok) {
+      showMsg(msg, 'success', `✅ Pesanan #${String(json.id).padStart(4,'0')} berhasil! Sisa stok: ${json.remaining_stock}`);
+      document.getElementById('product_name').value = '';
+      document.getElementById('quantity').value = '';
+      document.getElementById('customer_name').value = '';
+      loadOrders();
+    } else {
+      showMsg(msg, 'error', json.message || 'Pesanan gagal dibuat.');
+    }
+  } catch (e) {
+    showMsg(msg, 'error', 'Tidak bisa terhubung ke Order Service.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Buat Pesanan';
+  }
+}
+
+async function updateStatus(id, status) {
+  try {
+    await fetch(`${ORDER_API}/orders/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status })
+    });
+    loadOrders();
+  } catch (e) { alert('Gagal update status.'); }
+}
+
+async function deleteOrder(id) {
+  if (!confirm(`Hapus pesanan #${String(id).padStart(4,'0')}?`)) return;
+  try {
+    await fetch(`${ORDER_API}/orders/${id}`, { method: 'DELETE' });
+    loadOrders();
+  } catch (e) { alert('Gagal hapus pesanan.'); }
+}
+
+// ── Warehouse ─────────────────────────────────────────────────────────────────
+async function loadWarehouse() {
+  const el = document.getElementById('warehouseList');
+  el.innerHTML = '<div class="empty-state"><span class="leaf">🍃</span>Memuat data warehouse...</div>';
+  try {
+    const res  = await fetch(`${WAREHOUSE_API}/warehouses`);
+    const json = await res.json();
+    if (!json.data?.length) {
+      el.innerHTML = '<div class="empty-state"><span class="leaf">🍃</span>Belum ada barang di warehouse.</div>';
+      return;
+    }
+    el.innerHTML = json.data.map(item => {
+      const name  = item.nama_barang || item.name || item.nama || '-';
+      const stock = item.stok ?? item.stock ?? item.jumlah ?? 0;
+      const cat   = item.kategori || item.category || '';
+      const badgeClass = stock === 0 ? 'stock-out' : stock < 10 ? 'stock-low' : 'stock-ok';
+      const badgeText  = stock === 0 ? '❌ Habis' : stock < 10 ? `⚠️ ${stock} tersisa` : `✅ ${stock}`;
+      return `
+        <div class="warehouse-card">
+          <div>
+            <div class="wh-name">${escapeHtml(name)}</div>
+            <div class="wh-meta">${cat ? `Kategori: ${escapeHtml(cat)}` : ''} · ID: ${item.id}</div>
+          </div>
+          <span class="stock-badge ${badgeClass}">${badgeText}</span>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    el.innerHTML = '<div class="empty-state"><span class="leaf">🍃</span>Tidak bisa memuat warehouse. Pastikan Warehouse Service berjalan di port 3002.</div>';
+  }
+}
+
+// ── Utils ─────────────────────────────────────────────────────────────────────
+function showMsg(el, type, text) {
+  el.className = `msg show ${type}`;
+  el.textContent = text;
+  setTimeout(() => el.classList.remove('show'), 5000);
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+loadOrders();
+</script>
+</body>
+</html>
